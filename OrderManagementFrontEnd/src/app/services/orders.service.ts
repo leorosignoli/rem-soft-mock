@@ -27,6 +27,12 @@ export class OrdersService {
 
   subscribeToOrderUpdates(): Observable<OrderUpdateEvent> {
     return new Observable(observer => {
+      // Check if we're in a browser environment
+      if (typeof EventSource === 'undefined') {
+        observer.error(new Error('EventSource not available'));
+        return;
+      }
+
       const eventSource = new EventSource(`${this.apiUrl}/stream`);
       
       eventSource.onmessage = event => {

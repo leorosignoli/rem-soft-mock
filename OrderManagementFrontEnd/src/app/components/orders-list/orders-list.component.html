@@ -66,19 +66,19 @@
 
   <div class="pagination" *ngIf="pageResponse && pageResponse.totalPages > 1">
     <button 
-      (click)="onPageChange(pageResponse.number - 1)"
-      [disabled]="pageResponse.first"
+      (click)="onPageChange(pageResponse.pageNumber - 1)"
+      [disabled]="pageResponse.pageNumber === 0"
       class="page-btn">
       Previous
     </button>
     
     <span class="page-info">
-      Page {{ pageResponse.number + 1 }} of {{ pageResponse.totalPages }}
+      Page {{ pageResponse.pageNumber + 1 }} of {{ pageResponse.totalPages }}
       ({{ pageResponse.totalElements }} total orders)
     </span>
     
     <button 
-      (click)="onPageChange(pageResponse.number + 1)"
+      (click)="onPageChange(pageResponse.pageNumber + 1)"
       [disabled]="pageResponse.last"
       class="page-btn">
       Next

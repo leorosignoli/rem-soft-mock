@@ -35,25 +35,11 @@ export interface PageRequest {
 
 export interface PageResponse<T> {
   content: T[];
-  pageable: {
-    pageNumber: number;
-    pageSize: number;
-    sort: {
-      sorted: boolean;
-      unsorted: boolean;
-    };
-  };
-  totalPages: number;
+  pageNumber: number;
+  pageSize: number;
   totalElements: number;
+  totalPages: number;
   last: boolean;
-  first: boolean;
-  numberOfElements: number;
-  size: number;
-  number: number;
-  sort: {
-    sorted: boolean;
-    unsorted: boolean;
-  };
 }
 
 export interface OrderUpdateEvent {

@@ -13,9 +13,7 @@ public record GetOrderResponseDTO(
 
   public record UserDTO(Long id, String name, String email) {}
 
-  public record OrderItemDTO(
-      Long id, Integer quantity, BigDecimal unitPrice, ProductDTO product) {}
+  public record OrderItemDTO(Long id, Integer quantity, BigDecimal unitPrice, ProductDTO product) {}
 
-  public record ProductDTO(
-      Long id, String name, BigDecimal price, String manufacturerName) {}
+  public record ProductDTO(Long id, String name, BigDecimal price, String manufacturerName) {}
 }

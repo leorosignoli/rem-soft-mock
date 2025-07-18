@@ -1,15 +1,18 @@
 package br.com.remsoft.order.management.service.repositories.entities;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Set;
 
 @Entity
+@Table(name = "orders")
 public class Order {
   @Id private Long id;
 
@@ -21,7 +24,7 @@ public class Order {
   @JoinColumn(name = "user_id")
   private User user;
 
-  @OneToMany(mappedBy = "order")
+  @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
   private Set<OrderItem> orderItems;
 
   public void setId(final Long id) {

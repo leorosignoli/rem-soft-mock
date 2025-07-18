@@ -3,9 +3,11 @@ package br.com.remsoft.order.management.service.repositories.entities;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.Set;
 
 @Entity
+@Table(name = "users")
 public class User {
   @Id private Long id;
 

@@ -8,7 +8,7 @@ import br.com.remsoft.order.management.service.repositories.entities.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface OrderMapper {
 
   GetOrderResponseDTO toGetOrderResponseDTO(Order order);

@@ -5,7 +5,7 @@ import br.com.remsoft.order.management.service.repositories.entities.Product;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface ProductMapper {
 
   @Mapping(target = "manufacturerName", source = "product.manufacturer.name")

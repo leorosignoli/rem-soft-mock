@@ -5,9 +5,12 @@ import br.com.remsoft.order.management.service.exceptions.NotFoundException;
 import br.com.remsoft.order.management.service.repositories.OrdersRepository;
 import br.com.remsoft.order.management.service.services.OrdersService;
 import br.com.remsoft.order.management.service.services.mappers.OrderMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class OrdersServiceImpl implements OrdersService {
@@ -21,6 +24,8 @@ public class OrdersServiceImpl implements OrdersService {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  @Cacheable(value = "orders", key = "#id")
   public GetOrderResponseDTO getOrderById(final Long id) {
     return ordersRepository
         .findById(id)
@@ -29,7 +34,14 @@ public class OrdersServiceImpl implements OrdersService {
   }
 
   @Override
+  @Transactional(readOnly = true)
+  @Cacheable(value = "orders-page", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
   public Page<GetOrderResponseDTO> getAllOrders(final Pageable pageable) {
     return ordersRepository.findAll(pageable).map(orderMapper::toGetOrderResponseDTO);
   }
+
+  @CacheEvict(
+      value = {"orders", "orders-page"},
+      allEntries = true)
+  public void evictOrdersCache() {}
 }

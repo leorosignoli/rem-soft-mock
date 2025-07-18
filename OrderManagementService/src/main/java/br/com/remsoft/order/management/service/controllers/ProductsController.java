@@ -1,5 +1,6 @@
 package br.com.remsoft.order.management.service.controllers;
 
+import br.com.remsoft.order.management.service.controllers.dtos.response.GetProductResponseDTO;
 import br.com.remsoft.order.management.service.services.ProductsService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,8 +18,7 @@ public class ProductsController {
   }
 
   @GetMapping("/{productId}")
-  public String getProductById(@PathVariable String productId) {
-    // This is a placeholder for the actual implementation
-    return "List of products";
+  public GetProductResponseDTO getProductById(@PathVariable Long productId) {
+    return productsService.getProductById(productId);
   }
 }

@@ -8,6 +8,7 @@ import org.mapstruct.Mapping;
 @Mapper
 public interface ProductMapper {
 
+  @Mapping(target = "manufacturerName", source = "product.manufacturer.name")
   @Mapping(target = "manufacturerId", source = "product.manufacturer.id")
   GetProductResponseDTO toGetProductResponseDTO(Product product);
 }

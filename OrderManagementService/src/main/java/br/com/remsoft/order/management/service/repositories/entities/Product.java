@@ -11,7 +11,7 @@ public class Product {
   @Id private Long id;
 
   @ManyToOne
-  @JoinColumn(name = "id")
+  @JoinColumn(name = "manufacturer_id")
   private Manufacturer manufacturer;
 
   private String name;

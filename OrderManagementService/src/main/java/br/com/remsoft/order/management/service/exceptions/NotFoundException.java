@@ -5,7 +5,11 @@ public class NotFoundException extends RuntimeException {
     super(message);
   }
 
-  public static NotFoundException ProductNotFound(Long id) {
+  public static NotFoundException productNotFound(Long id) {
     return new NotFoundException("Product with id " + id + " not found.");
+  }
+
+  public static NotFoundException orderNotFound(Long id) {
+    return new NotFoundException("Order with id " + id + " not found.");
   }
 }

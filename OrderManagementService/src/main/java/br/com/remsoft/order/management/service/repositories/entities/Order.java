@@ -2,9 +2,12 @@ package br.com.remsoft.order.management.service.repositories.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.util.Set;
 
 @Entity
 public class Order {
@@ -14,7 +17,12 @@ public class Order {
 
   private BigDecimal totalAmount;
 
-  @ManyToOne private User user;
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private User user;
+
+  @OneToMany(mappedBy = "order")
+  private Set<OrderItem> orderItems;
 
   public void setId(final Long id) {
     this.id = id;
@@ -46,5 +54,13 @@ public class Order {
 
   public void setUser(final User user) {
     this.user = user;
+  }
+
+  public Set<OrderItem> getOrderItems() {
+    return orderItems;
+  }
+
+  public void setOrderItems(final Set<OrderItem> orderItems) {
+    this.orderItems = orderItems;
   }
 }

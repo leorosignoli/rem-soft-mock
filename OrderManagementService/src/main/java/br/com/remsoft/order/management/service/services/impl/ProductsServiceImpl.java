@@ -25,6 +25,6 @@ public class ProductsServiceImpl implements ProductsService {
     return productsRepository
         .findById(id)
         .map(productMapper::toGetProductResponseDTO)
-        .orElseThrow(() -> NotFoundException.ProductNotFound(id));
+        .orElseThrow(() -> NotFoundException.productNotFound(id));
   }
 }

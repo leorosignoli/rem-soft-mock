@@ -9,24 +9,25 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CacheWarmingApplicationListener {
-    
-    private static final Logger logger = LoggerFactory.getLogger(CacheWarmingApplicationListener.class);
-    
-    private final OrderCacheWarmingService orderCacheWarmingService;
-    
-    public CacheWarmingApplicationListener(OrderCacheWarmingService orderCacheWarmingService) {
-        this.orderCacheWarmingService = orderCacheWarmingService;
+
+  private static final Logger logger =
+      LoggerFactory.getLogger(CacheWarmingApplicationListener.class);
+
+  private final OrderCacheWarmingService orderCacheWarmingService;
+
+  public CacheWarmingApplicationListener(OrderCacheWarmingService orderCacheWarmingService) {
+    this.orderCacheWarmingService = orderCacheWarmingService;
+  }
+
+  @EventListener(ApplicationReadyEvent.class)
+  public void onApplicationReady() {
+    logger.info("Application is ready, starting cache warming...");
+
+    try {
+      orderCacheWarmingService.warmAllCaches();
+      logger.info("Cache warming completed successfully");
+    } catch (Exception e) {
+      logger.error("Error during cache warming", e);
     }
-    
-    @EventListener(ApplicationReadyEvent.class)
-    public void onApplicationReady() {
-        logger.info("Application is ready, starting cache warming...");
-        
-        try {
-            orderCacheWarmingService.warmAllCaches();
-            logger.info("Cache warming completed successfully");
-        } catch (Exception e) {
-            logger.error("Error during cache warming", e);
-        }
-    }
+  }
 }

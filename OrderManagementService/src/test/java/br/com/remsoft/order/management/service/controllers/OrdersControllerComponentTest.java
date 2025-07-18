@@ -2,6 +2,7 @@ package br.com.remsoft.order.management.service.controllers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.com.remsoft.order.management.service.controllers.dtos.response.CustomPageDTO;
 import br.com.remsoft.order.management.service.controllers.dtos.response.GetOrderResponseDTO;
 import br.com.remsoft.order.management.service.repositories.ManufacturersRepository;
 import br.com.remsoft.order.management.service.repositories.OrdersRepository;
@@ -152,41 +153,40 @@ class OrdersControllerComponentTest {
 
   @Test
   void getAllOrders_DefaultPagination_ReturnsPagedResults() {
-    ResponseEntity<CustomPage<GetOrderResponseDTO>> response =
+    ResponseEntity<CustomPageDTO<GetOrderResponseDTO>> response =
         restTemplate.exchange(
             "http://localhost:" + port + "/orders",
             HttpMethod.GET,
             null,
-            new ParameterizedTypeReference<CustomPage<GetOrderResponseDTO>>() {});
+            new ParameterizedTypeReference<CustomPageDTO<GetOrderResponseDTO>>() {});
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    CustomPage<GetOrderResponseDTO> page = response.getBody();
+    CustomPageDTO<GetOrderResponseDTO> page = response.getBody();
     assertThat(page).isNotNull();
     assertThat(page.getContent()).hasSize(1);
     assertThat(page.getContent().get(0).id()).isEqualTo(testOrder.getId());
-    assertThat(page.getPageable().getPageSize()).isEqualTo(20);
-    assertThat(page.getPageable().getPageNumber()).isZero();
+    assertThat(page.getPageSize()).isEqualTo(20);
+    assertThat(page.getPageNumber()).isZero();
     assertThat(page.getTotalElements()).isEqualTo(1);
     assertThat(page.getTotalPages()).isEqualTo(1);
   }
 
   @Test
   void getAllOrders_CustomPagination_ReturnsCorrectPage() {
-    ResponseEntity<CustomPage<GetOrderResponseDTO>> response =
+    ResponseEntity<CustomPageDTO<GetOrderResponseDTO>> response =
         restTemplate.exchange(
             "http://localhost:"
                 + port
                 + "/orders?page=0&size=5&sortBy=orderDate&sortDirection=desc",
             HttpMethod.GET,
             null,
-            new ParameterizedTypeReference<CustomPage<GetOrderResponseDTO>>() {});
+            new ParameterizedTypeReference<CustomPageDTO<GetOrderResponseDTO>>() {});
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    CustomPage<GetOrderResponseDTO> page = response.getBody();
+    CustomPageDTO<GetOrderResponseDTO> page = response.getBody();
     assertThat(page).isNotNull();
-    assertThat(page.getPageable().getPageSize()).isEqualTo(5);
-    assertThat(page.getPageable().getPageNumber()).isZero();
-    assertThat(page.getSort().isSorted()).isTrue();
+    assertThat(page.getPageSize()).isEqualTo(5);
+    assertThat(page.getPageNumber()).isZero();
   }
 
   @Test
@@ -196,15 +196,15 @@ class OrdersControllerComponentTest {
             2L, OffsetDateTime.now().minusDays(1), new BigDecimal("150.00"), testUser);
     ordersRepository.save(secondOrder);
 
-    ResponseEntity<CustomPage<GetOrderResponseDTO>> response =
+    ResponseEntity<CustomPageDTO<GetOrderResponseDTO>> response =
         restTemplate.exchange(
             "http://localhost:" + port + "/orders?sortBy=orderDate&sortDirection=asc",
             HttpMethod.GET,
             null,
-            new ParameterizedTypeReference<CustomPage<GetOrderResponseDTO>>() {});
+            new ParameterizedTypeReference<CustomPageDTO<GetOrderResponseDTO>>() {});
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    CustomPage<GetOrderResponseDTO> page = response.getBody();
+    CustomPageDTO<GetOrderResponseDTO> page = response.getBody();
     assertThat(page).isNotNull();
     assertThat(page.getContent()).hasSize(2);
     assertThat(page.getContent().get(0).id()).isEqualTo(secondOrder.getId());
@@ -215,100 +215,18 @@ class OrdersControllerComponentTest {
   void getAllOrders_EmptyDatabase_ReturnsEmptyPage() {
     ordersRepository.deleteAll();
 
-    ResponseEntity<CustomPage<GetOrderResponseDTO>> response =
+    ResponseEntity<CustomPageDTO<GetOrderResponseDTO>> response =
         restTemplate.exchange(
             "http://localhost:" + port + "/orders",
             HttpMethod.GET,
             null,
-            new ParameterizedTypeReference<CustomPage<GetOrderResponseDTO>>() {});
+            new ParameterizedTypeReference<CustomPageDTO<GetOrderResponseDTO>>() {});
 
     assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-    CustomPage<GetOrderResponseDTO> page = response.getBody();
+    CustomPageDTO<GetOrderResponseDTO> page = response.getBody();
     assertThat(page).isNotNull();
     assertThat(page.getContent()).isEmpty();
     assertThat(page.getTotalElements()).isZero();
     assertThat(page.getTotalPages()).isZero();
-  }
-
-  // Helper class to deserialize Spring's Page
-  public static class CustomPage<T> {
-    private java.util.List<T> content;
-    private CustomPageable pageable;
-    private long totalElements;
-    private int totalPages;
-    private CustomSort sort;
-
-    public java.util.List<T> getContent() {
-      return content;
-    }
-
-    public void setContent(java.util.List<T> content) {
-      this.content = content;
-    }
-
-    public CustomPageable getPageable() {
-      return pageable;
-    }
-
-    public void setPageable(CustomPageable pageable) {
-      this.pageable = pageable;
-    }
-
-    public long getTotalElements() {
-      return totalElements;
-    }
-
-    public void setTotalElements(long totalElements) {
-      this.totalElements = totalElements;
-    }
-
-    public int getTotalPages() {
-      return totalPages;
-    }
-
-    public void setTotalPages(int totalPages) {
-      this.totalPages = totalPages;
-    }
-
-    public CustomSort getSort() {
-      return sort;
-    }
-
-    public void setSort(CustomSort sort) {
-      this.sort = sort;
-    }
-  }
-
-  public static class CustomPageable {
-    private int pageNumber;
-    private int pageSize;
-
-    public int getPageNumber() {
-      return pageNumber;
-    }
-
-    public void setPageNumber(int pageNumber) {
-      this.pageNumber = pageNumber;
-    }
-
-    public int getPageSize() {
-      return pageSize;
-    }
-
-    public void setPageSize(int pageSize) {
-      this.pageSize = pageSize;
-    }
-  }
-
-  public static class CustomSort {
-    private boolean sorted;
-
-    public boolean isSorted() {
-      return sorted;
-    }
-
-    public void setSorted(boolean sorted) {
-      this.sorted = sorted;
-    }
   }
 }

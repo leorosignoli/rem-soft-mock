@@ -2,11 +2,11 @@ package br.com.remsoft.order.management.service.controllers;
 
 import br.com.remsoft.order.management.service.controllers.dtos.request.CreateOrderRequestDTO;
 import br.com.remsoft.order.management.service.controllers.dtos.request.PageRequestDTO;
+import br.com.remsoft.order.management.service.controllers.dtos.response.CustomPageDTO;
 import br.com.remsoft.order.management.service.controllers.dtos.response.GetOrderResponseDTO;
 import br.com.remsoft.order.management.service.services.OrderUpdateService;
 import br.com.remsoft.order.management.service.services.OrdersService;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -36,7 +36,8 @@ public class OrdersController {
   }
 
   @GetMapping
-  public Page<GetOrderResponseDTO> getAllOrders(@ModelAttribute PageRequestDTO pageRequest) {
+  public CustomPageDTO<GetOrderResponseDTO> getAllOrders(
+      @ModelAttribute PageRequestDTO pageRequest) {
     return ordersService.getAllOrders(pageRequest.toPageable());
   }
 

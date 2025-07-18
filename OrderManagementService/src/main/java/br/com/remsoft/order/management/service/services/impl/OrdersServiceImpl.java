@@ -1,6 +1,7 @@
 package br.com.remsoft.order.management.service.services.impl;
 
 import br.com.remsoft.order.management.service.controllers.dtos.request.CreateOrderRequestDTO;
+import br.com.remsoft.order.management.service.controllers.dtos.response.CustomPageDTO;
 import br.com.remsoft.order.management.service.controllers.dtos.response.GetOrderResponseDTO;
 import br.com.remsoft.order.management.service.controllers.dtos.response.OrderUpdateEventDTO;
 import br.com.remsoft.order.management.service.exceptions.NotFoundException;
@@ -17,7 +18,6 @@ import java.util.HashSet;
 import java.util.Set;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,9 +56,18 @@ public class OrdersServiceImpl implements OrdersService {
 
   @Override
   @Transactional(readOnly = true)
-  @Cacheable(value = "orders-page", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
-  public Page<GetOrderResponseDTO> getAllOrders(final Pageable pageable) {
-    return ordersRepository.findAll(pageable).map(orderMapper::toGetOrderResponseDTO);
+  @Cacheable(
+      value = "orders-page",
+      key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
+  public CustomPageDTO<GetOrderResponseDTO> getAllOrders(final Pageable pageable) {
+    final var page = ordersRepository.findAll(pageable).map(orderMapper::toGetOrderResponseDTO);
+    return new CustomPageDTO<>(
+        page.getContent(),
+        page.getNumber(),
+        page.getSize(),
+        page.getTotalElements(),
+        page.getTotalPages(),
+        page.isLast());
   }
 
   @Override

@@ -32,13 +32,15 @@ public interface OrdersRepository
       value =
           "SELECT o FROM Order o LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.product p LEFT JOIN FETCH p.manufacturer LEFT JOIN FETCH o.user WHERE o.orderDate >= :since",
       countQuery = "SELECT COUNT(o) FROM Order o WHERE o.orderDate >= :since")
-  Page<Order> findRecentOrdersWithOrderItems(@Param("since") OffsetDateTime since, Pageable pageable);
+  Page<Order> findRecentOrdersWithOrderItems(
+      @Param("since") OffsetDateTime since, Pageable pageable);
 
   @Query(
       value =
           "SELECT o FROM Order o LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.product p LEFT JOIN FETCH p.manufacturer LEFT JOIN FETCH o.user WHERE o.totalAmount >= :minAmount",
       countQuery = "SELECT COUNT(o) FROM Order o WHERE o.totalAmount >= :minAmount")
-  Page<Order> findHighValueOrdersWithOrderItems(@Param("minAmount") BigDecimal minAmount, Pageable pageable);
+  Page<Order> findHighValueOrdersWithOrderItems(
+      @Param("minAmount") BigDecimal minAmount, Pageable pageable);
 
   @Query(
       value =

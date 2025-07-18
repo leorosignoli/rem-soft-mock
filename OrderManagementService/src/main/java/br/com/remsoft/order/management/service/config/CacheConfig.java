@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,9 +23,14 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 @EnableCaching
 public class CacheConfig {
+  private static final Logger LOGGER = LoggerFactory.getLogger(CacheConfig.class);
+
+  @Value("${spring.cache.redis.time-to-live}")
+  private long cacheTtlMillis;
 
   @Bean
   public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+    LOGGER.info("Configuring Redis cache manager");
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
     objectMapper.activateDefaultTyping(
@@ -36,7 +44,7 @@ public class CacheConfig {
 
     RedisCacheConfiguration config =
         RedisCacheConfiguration.defaultCacheConfig()
-            .entryTtl(Duration.ofMinutes(10))
+            .entryTtl(Duration.ofMillis(cacheTtlMillis))
             .serializeKeysWith(
                 RedisSerializationContext.SerializationPair.fromSerializer(
                     new StringRedisSerializer()))
@@ -44,6 +52,10 @@ public class CacheConfig {
                 RedisSerializationContext.SerializationPair.fromSerializer(serializer))
             .disableCachingNullValues();
 
-    return RedisCacheManager.builder(connectionFactory).cacheDefaults(config).build();
+    LOGGER.debug("Cache configuration: TTL={}ms, null values disabled", cacheTtlMillis);
+
+    RedisCacheManager cacheManager = RedisCacheManager.builder(connectionFactory).cacheDefaults(config).build();
+    LOGGER.info("Redis cache manager configured successfully");
+    return cacheManager;
   }
 }

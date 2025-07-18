@@ -13,7 +13,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(NotFoundException.class)
   public ResponseEntity<String> handleNotFoundException(NotFoundException ex) {
-    LOGGER.error("Not Found Exception: " + ex.getMessage());
+    LOGGER.error("Not Found Exception: {}", ex.getMessage());
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Resource not found");
   }
 }

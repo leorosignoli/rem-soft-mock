@@ -1,0 +1,91 @@
+<div class="orders-list-container">
+  <div class="header">
+    <h2>Orders</h2>
+    <div class="header-actions">
+      <div class="real-time-indicator" [class.active]="isRealTimeEnabled">
+        <span class="indicator-dot"></span>
+        <span class="indicator-text">{{ isRealTimeEnabled ? 'Live' : 'Offline' }}</span>
+      </div>
+      <button (click)="loadOrders()" class="refresh-btn" [disabled]="loading">
+        <span class="refresh-icon">↻</span>
+        Refresh
+      </button>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading orders...</p>
+  </div>
+
+  <div class="error" *ngIf="error">
+    <p>{{ error }}</p>
+    <button (click)="loadOrders()" class="retry-btn">Retry</button>
+  </div>
+
+  <div class="table-container" *ngIf="!loading && !error && orders.length > 0">
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th (click)="onSortChange('id')" class="sortable">
+            Order ID
+            <span class="sort-icon">{{ getSortIcon('id') }}</span>
+          </th>
+          <th (click)="onSortChange('orderDate')" class="sortable">
+            Order Date
+            <span class="sort-icon">{{ getSortIcon('orderDate') }}</span>
+          </th>
+          <th>Customer</th>
+          <th>Items</th>
+          <th (click)="onSortChange('totalAmount')" class="sortable">
+            Total Amount
+            <span class="sort-icon">{{ getSortIcon('totalAmount') }}</span>
+          </th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let order of orders; trackBy: trackByOrderId">
+          <td class="order-id">#{{ order.id }}</td>
+          <td class="order-date">{{ formatDate(order.orderDate) }}</td>
+          <td class="customer">
+            <div class="customer-info">
+              <div class="customer-name">{{ order.user.name }}</div>
+              <div class="customer-email">{{ order.user.email }}</div>
+            </div>
+          </td>
+          <td class="items-count">{{ getTotalItems(order) }}</td>
+          <td class="total-amount">{{ formatCurrency(order.totalAmount) }}</td>
+          <td class="actions">
+            <a [routerLink]="['/orders', order.id]" class="view-btn">View</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination" *ngIf="pageResponse && pageResponse.totalPages > 1">
+    <button 
+      (click)="onPageChange(pageResponse.number - 1)"
+      [disabled]="pageResponse.first"
+      class="page-btn">
+      Previous
+    </button>
+    
+    <span class="page-info">
+      Page {{ pageResponse.number + 1 }} of {{ pageResponse.totalPages }}
+      ({{ pageResponse.totalElements }} total orders)
+    </span>
+    
+    <button 
+      (click)="onPageChange(pageResponse.number + 1)"
+      [disabled]="pageResponse.last"
+      class="page-btn">
+      Next
+    </button>
+  </div>
+
+  <div class="no-data" *ngIf="!loading && !error && orders.length === 0">
+    <p>No orders found.</p>
+  </div>
+</div>

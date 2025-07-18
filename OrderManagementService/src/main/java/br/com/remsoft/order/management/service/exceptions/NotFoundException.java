@@ -12,4 +12,12 @@ public class NotFoundException extends RuntimeException {
   public static NotFoundException orderNotFound(Long id) {
     return new NotFoundException("Order with id " + id + " not found.");
   }
+
+  public static NotFoundException manufacturerNotFound(Long id) {
+    return new NotFoundException("Manufacturer with id " + id + " not found.");
+  }
+
+  public static NotFoundException userNotFound(Long id) {
+    return new NotFoundException("User with id " + id + " not found.");
+  }
 }

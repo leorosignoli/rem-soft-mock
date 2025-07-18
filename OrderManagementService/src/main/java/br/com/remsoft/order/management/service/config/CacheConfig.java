@@ -38,6 +38,7 @@ public class CacheConfig {
         ObjectMapper.DefaultTyping.NON_FINAL,
         JsonTypeInfo.As.PROPERTY);
     objectMapper.registerModule(new JavaTimeModule());
+    objectMapper.findAndRegisterModules();
 
     GenericJackson2JsonRedisSerializer serializer =
         new GenericJackson2JsonRedisSerializer(objectMapper);

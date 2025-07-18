@@ -44,3 +44,12 @@ redis:
   keyspace-notifications:
     enabled: true
     config: "Ex"
+
+# Cache warming configuration
+cache:
+  warming:
+    enabled: true
+    recent-days: 30
+    min-amount: 100.00
+    page-count: 5
+    page-size: 20

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -39,6 +40,9 @@ public class CacheConfig {
         JsonTypeInfo.As.PROPERTY);
     objectMapper.registerModule(new JavaTimeModule());
     objectMapper.findAndRegisterModules();
+
+    // Register PageImplMixin to handle PageImpl serialization/deserialization
+    objectMapper.addMixIn(PageImpl.class, PageImplMixin.class);
 
     GenericJackson2JsonRedisSerializer serializer =
         new GenericJackson2JsonRedisSerializer(objectMapper);

@@ -1,6 +1,7 @@
 package br.com.remsoft.order.management.service.services;
 
 import br.com.remsoft.order.management.service.config.CacheWarmingProperties;
+import br.com.remsoft.order.management.service.controllers.dtos.response.CustomPageDTO;
 import br.com.remsoft.order.management.service.repositories.OrdersRepository;
 import br.com.remsoft.order.management.service.repositories.entities.Order;
 import br.com.remsoft.order.management.service.services.mappers.OrderMapper;
@@ -143,12 +144,22 @@ public class OrderCacheWarmingService {
 
       var pageResponse = orders.map(orderMapper::toGetOrderResponseDTO);
 
+      // Convert Page to CustomPageDTO to match OrdersServiceImpl.getAllOrders() return type
+      var customPageResponse =
+          new CustomPageDTO<>(
+              pageResponse.getContent(),
+              pageResponse.getNumber(),
+              pageResponse.getSize(),
+              pageResponse.getTotalElements(),
+              pageResponse.getTotalPages(),
+              pageResponse.isLast());
+
       String cacheKey =
           String.format(
               "%d-%d-%s: %s",
               page, cacheWarmingProperties.getPageSize(), sortField, direction.name());
 
-      cacheManager.getCache("orders-page").put(cacheKey, pageResponse);
+      cacheManager.getCache("orders-page").put(cacheKey, customPageResponse);
     }
 
     logger.info(

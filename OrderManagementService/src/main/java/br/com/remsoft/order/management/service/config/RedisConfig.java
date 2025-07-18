@@ -1,10 +1,17 @@
 package br.com.remsoft.order.management.service.config;
 
 import br.com.remsoft.order.management.service.listeners.OrderCacheEvictionListener;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.PatternTopic;
@@ -25,10 +32,27 @@ public class RedisConfig {
   public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
     final RedisTemplate<String, Object> template = new RedisTemplate<>();
     template.setConnectionFactory(connectionFactory);
+
+    // Create custom ObjectMapper with PageImplMixin registered
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+    objectMapper.activateDefaultTyping(
+        LaissezFaireSubTypeValidator.instance,
+        ObjectMapper.DefaultTyping.NON_FINAL,
+        JsonTypeInfo.As.PROPERTY);
+    objectMapper.registerModule(new JavaTimeModule());
+    objectMapper.findAndRegisterModules();
+
+    // Register PageImplMixin to handle PageImpl serialization/deserialization
+    objectMapper.addMixIn(PageImpl.class, PageImplMixin.class);
+
+    GenericJackson2JsonRedisSerializer serializer =
+        new GenericJackson2JsonRedisSerializer(objectMapper);
+
     template.setKeySerializer(new StringRedisSerializer());
-    template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+    template.setValueSerializer(serializer);
     template.setHashKeySerializer(new StringRedisSerializer());
-    template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
+    template.setHashValueSerializer(serializer);
     template.afterPropertiesSet();
     return template;
   }

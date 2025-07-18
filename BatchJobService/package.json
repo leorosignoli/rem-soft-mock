@@ -1,0 +1,14 @@
+{
+  "name": "order-batch-job",
+  "version": "1.0.0",
+  "description": "Batch job service that creates orders every 10 seconds",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "author": "",
+  "license": "ISC"
+} 

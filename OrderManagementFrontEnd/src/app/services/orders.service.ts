@@ -33,30 +33,79 @@ export class OrdersService {
         return;
       }
 
-      const eventSource = new EventSource(`${this.apiUrl}/stream`);
+      const sseUrl = `${this.apiUrl}/stream`;
+      console.log('Connecting to SSE endpoint:', sseUrl);
       
-      eventSource.onmessage = event => {
-        const data = JSON.parse(event.data);
-        observer.next(data);
+      const eventSource = new EventSource(sseUrl);
+      
+      eventSource.onopen = () => {
+        console.log('SSE connection opened successfully');
       };
       
+      // Listen to the specific 'order-update' event
+      eventSource.addEventListener('order-update', (event: MessageEvent) => {
+        try {
+          console.log('Received order-update event:', event.data);
+          const backendEvent = JSON.parse(event.data);
+          // Transform backend event structure to frontend structure
+          const frontendEvent: OrderUpdateEvent = {
+            orderId: backendEvent.orderId,
+            eventType: this.mapBackendEventType(backendEvent.eventType),
+            timestamp: backendEvent.timestamp
+          };
+          console.log('Transformed event:', frontendEvent);
+          observer.next(frontendEvent);
+        } catch (error) {
+          console.error('Error parsing SSE event:', error);
+        }
+      });
+
+      // Listen to connection events
+      eventSource.addEventListener('connected', (event: MessageEvent) => {
+        console.log('SSE Connected:', event.data);
+      });
+
+      // Listen to heartbeat events
+      eventSource.addEventListener('heartbeat', (event: MessageEvent) => {
+        console.debug('SSE Heartbeat:', event.data);
+      });
+      
       eventSource.onerror = error => {
+        console.error('SSE Error:', error);
+        console.error('SSE ReadyState:', eventSource.readyState);
         observer.error(error);
       };
       
-      return () => eventSource.close();
+      return () => {
+        console.log('Closing SSE connection');
+        eventSource.close();
+      };
     });
   }
 
+  private mapBackendEventType(backendEventType: string): 'CREATED' | 'UPDATED' | 'DELETED' {
+    // Backend currently only sends ORDER_UPDATED, map it to UPDATED
+    switch (backendEventType) {
+      case 'ORDER_UPDATED':
+        return 'UPDATED';
+      case 'ORDER_CREATED':
+        return 'CREATED';
+      case 'ORDER_DELETED':
+        return 'DELETED';
+      default:
+        return 'UPDATED'; // Default fallback
+    }
+  }
+
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'BRL'
     }).format(amount);
   }
 
   formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',

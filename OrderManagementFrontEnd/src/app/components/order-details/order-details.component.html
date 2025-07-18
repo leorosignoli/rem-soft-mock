@@ -1,61 +1,61 @@
 <div class="order-details-container">
   <div class="header">
-    <button (click)="goBack()" class="back-btn">← Back to Orders</button>
-    <h2 *ngIf="order">Order #{{ order.id }}</h2>
+    <button (click)="goBack()" class="back-btn">← Voltar aos Pedidos</button>
+    <h2 *ngIf="order">Pedido #{{ order.id }}</h2>
   </div>
 
   <div class="loading" *ngIf="loading">
     <div class="spinner"></div>
-    <p>Loading order details...</p>
+    <p>Carregando detalhes do pedido...</p>
   </div>
 
   <div class="error" *ngIf="error">
     <p>{{ error }}</p>
-    <button (click)="loadOrder(order?.id || 0)" class="retry-btn">Retry</button>
+    <button (click)="loadOrder(order?.id || 0)" class="retry-btn">Tentar Novamente</button>
   </div>
 
   <div class="order-content" *ngIf="!loading && !error && order">
     <div class="order-summary">
       <div class="summary-card">
-        <h3>Order Summary</h3>
+        <h3>Resumo do Pedido</h3>
         <div class="summary-item">
-          <span class="label">Order ID:</span>
+          <span class="label">ID do Pedido:</span>
           <span class="value">#{{ order.id }}</span>
         </div>
         <div class="summary-item">
-          <span class="label">Order Date:</span>
+          <span class="label">Data do Pedido:</span>
           <span class="value">{{ formatDate(order.orderDate) }}</span>
         </div>
         <div class="summary-item">
-          <span class="label">Total Items:</span>
+          <span class="label">Total de Itens:</span>
           <span class="value">{{ getTotalItems() }}</span>
         </div>
         <div class="summary-item total">
-          <span class="label">Total Amount:</span>
+          <span class="label">Valor Total:</span>
           <span class="value">{{ formatCurrency(order.totalAmount) }}</span>
         </div>
       </div>
 
       <div class="customer-card">
-        <h3>Customer Information</h3>
+        <h3>Informações do Cliente</h3>
         <div class="customer-details">
           <div class="customer-name">{{ order.user.name }}</div>
           <div class="customer-email">{{ order.user.email }}</div>
-          <div class="customer-id">Customer ID: {{ order.user.id }}</div>
+          <div class="customer-id">ID do Cliente: {{ order.user.id }}</div>
         </div>
       </div>
     </div>
 
     <div class="order-items">
-      <h3>Order Items</h3>
+      <h3>Itens do Pedido</h3>
       <div class="items-table-container">
         <table class="items-table">
           <thead>
             <tr>
-              <th>Product</th>
-              <th>Manufacturer</th>
-              <th>Unit Price</th>
-              <th>Quantity</th>
+              <th>Produto</th>
+              <th>Fabricante</th>
+              <th>Preço Unitário</th>
+              <th>Quantidade</th>
               <th>Total</th>
             </tr>
           </thead>

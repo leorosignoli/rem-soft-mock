@@ -53,7 +53,7 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
           this.loading = false;
         },
         error: (error) => {
-          this.error = 'Failed to load order details';
+          this.error = 'Falha ao carregar detalhes do pedido';
           this.loading = false;
           console.error('Error loading order:', error);
         }

@@ -79,6 +79,20 @@ services:
     networks:
       - order-management-network
 
+  batch-job:
+    build:
+      context: ./BatchJobService
+      dockerfile: Dockerfile
+    container_name: order-batch-job
+    environment:
+      BACKEND_URL: http://backend:8080
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - order-management-network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:

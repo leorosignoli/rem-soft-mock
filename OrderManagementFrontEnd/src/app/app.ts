@@ -8,5 +8,5 @@ import { RouterOutlet, RouterLink } from '@angular/router';
   styleUrl: './app.css'
 })
 export class App {
-  protected title = 'OrderManagementFrontEnd';
+  protected title = 'Sistema de Gerenciamento de Pedidos';
 }

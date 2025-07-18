@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -28,11 +28,16 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   pageResponse: PageResponse<Order> | null = null;
   private destroy$ = new Subject<void>();
 
-  constructor(private ordersService: OrdersService) {}
+  constructor(
+    private ordersService: OrdersService,
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone
+  ) {}
 
   ngOnInit(): void {
     this.loadOrders();
     this.setupRealTimeUpdates();
+    this.cdr.markForCheck();
   }
 
   ngOnDestroy(): void {
@@ -51,10 +56,12 @@ export class OrdersListComponent implements OnInit, OnDestroy {
           this.pageResponse = response;
           this.orders = response.content;
           this.loading = false;
+          this.cdr.markForCheck();
         },
         error: (error) => {
-          this.error = 'Failed to load orders';
+          this.error = 'Falha ao carregar pedidos';
           this.loading = false;
+          this.cdr.markForCheck();
           console.error('Error loading orders:', error);
         }
       });
@@ -104,24 +111,45 @@ export class OrdersListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (updateEvent) => {
-          this.isRealTimeEnabled = true;
-          this.handleOrderUpdate(updateEvent);
+          // Run in Angular zone to ensure change detection triggers
+          this.ngZone.run(() => {
+            this.isRealTimeEnabled = true;
+            this.handleOrderUpdate(updateEvent);
+            this.cdr.markForCheck();
+          });
         },
         error: (error) => {
-          this.isRealTimeEnabled = false;
-          console.warn('Real-time updates unavailable:', error);
+          this.ngZone.run(() => {
+            this.isRealTimeEnabled = false;
+            this.cdr.markForCheck();
+          });
+          console.warn('Atualizações em tempo real indisponíveis:', error);
         }
       });
   }
 
   handleOrderUpdate(updateEvent: any): void {
+    console.log('Processing order update event:', updateEvent);
+    
     switch (updateEvent.eventType) {
       case 'CREATED':
       case 'UPDATED':
+        // For created/updated orders, reload the current page to get fresh data
         this.loadOrders();
         break;
       case 'DELETED':
+        // For deleted orders, remove from current list if present
         this.orders = this.orders.filter(order => order.id !== updateEvent.orderId);
+        if (this.pageResponse) {
+          this.pageResponse.totalElements--;
+          this.pageResponse.content = this.orders;
+        }
+        this.cdr.markForCheck();
+        break;
+      default:
+        console.warn('Unknown event type:', updateEvent.eventType);
+        // Fallback: reload orders for any unknown event type
+        this.loadOrders();
         break;
     }
   }

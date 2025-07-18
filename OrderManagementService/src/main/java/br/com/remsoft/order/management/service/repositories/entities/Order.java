@@ -2,6 +2,8 @@ package br.com.remsoft.order.management.service.repositories.entities;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -14,7 +16,9 @@ import java.util.Set;
 @Entity
 @Table(name = "orders")
 public class Order {
-  @Id private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
   private OffsetDateTime orderDate;
 

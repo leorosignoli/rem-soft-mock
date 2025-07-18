@@ -1,8 +1,10 @@
 package br.com.remsoft.order.management.service.services.impl;
 
 import br.com.remsoft.order.management.service.controllers.dtos.response.GetOrderResponseDTO;
+import br.com.remsoft.order.management.service.controllers.dtos.response.OrderUpdateEventDTO;
 import br.com.remsoft.order.management.service.exceptions.NotFoundException;
 import br.com.remsoft.order.management.service.repositories.OrdersRepository;
+import br.com.remsoft.order.management.service.services.OrderUpdateService;
 import br.com.remsoft.order.management.service.services.OrdersService;
 import br.com.remsoft.order.management.service.services.mappers.OrderMapper;
 import org.springframework.cache.annotation.CacheEvict;
@@ -17,10 +19,15 @@ public class OrdersServiceImpl implements OrdersService {
 
   private final OrdersRepository ordersRepository;
   private final OrderMapper orderMapper;
+  private final OrderUpdateService orderUpdateService;
 
-  public OrdersServiceImpl(OrdersRepository ordersRepository, OrderMapper orderMapper) {
+  public OrdersServiceImpl(
+      OrdersRepository ordersRepository,
+      OrderMapper orderMapper,
+      OrderUpdateService orderUpdateService) {
     this.ordersRepository = ordersRepository;
     this.orderMapper = orderMapper;
+    this.orderUpdateService = orderUpdateService;
   }
 
   @Override
@@ -44,4 +51,9 @@ public class OrdersServiceImpl implements OrdersService {
       value = {"orders", "orders-page"},
       allEntries = true)
   public void evictOrdersCache() {}
+
+  public void broadcastOrderUpdated(final GetOrderResponseDTO orderData) {
+    final var event = OrderUpdateEventDTO.updated(orderData);
+    orderUpdateService.broadcastOrderUpdate(event);
+  }
 }

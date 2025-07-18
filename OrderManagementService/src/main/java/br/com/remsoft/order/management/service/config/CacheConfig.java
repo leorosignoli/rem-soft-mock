@@ -54,7 +54,8 @@ public class CacheConfig {
 
     LOGGER.debug("Cache configuration: TTL={}ms, null values disabled", cacheTtlMillis);
 
-    RedisCacheManager cacheManager = RedisCacheManager.builder(connectionFactory).cacheDefaults(config).build();
+    RedisCacheManager cacheManager =
+        RedisCacheManager.builder(connectionFactory).cacheDefaults(config).build();
     LOGGER.info("Redis cache manager configured successfully");
     return cacheManager;
   }

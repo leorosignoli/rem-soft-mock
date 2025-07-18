@@ -32,3 +32,15 @@ spring:
       port: 6379
       repositories:
         enabled: false
+      timeout: 60000
+      jedis:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+# Redis keyspace notifications configuration
+redis:
+  keyspace-notifications:
+    enabled: true
+    config: "Ex"

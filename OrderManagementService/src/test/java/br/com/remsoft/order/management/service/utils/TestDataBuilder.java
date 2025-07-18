@@ -79,7 +79,7 @@ public class TestDataBuilder {
 
   public static Order createCompleteOrder() {
     User user = createDefaultUser();
-    Manufacturer manufacturer = createDefaultManufacturer();
+    createDefaultManufacturer();
     Product product = createDefaultProduct();
     Order order = createOrder(1L, OffsetDateTime.now(), new BigDecimal("199.98"), user);
 

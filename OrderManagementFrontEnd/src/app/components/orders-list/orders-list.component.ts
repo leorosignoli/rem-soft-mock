@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -17,6 +17,9 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   loading = false;
   error = '';
   isRealTimeEnabled = false;
+  
+  // Signal to control animation for newly inserted orders
+  newOrderIds = signal<Set<number>>(new Set());
   
   pageRequest: PageRequest = {
     page: 0,
@@ -56,6 +59,8 @@ export class OrdersListComponent implements OnInit, OnDestroy {
           this.pageResponse = response;
           this.orders = response.content;
           this.loading = false;
+          // Clear animation state when loading fresh data
+          this.newOrderIds.set(new Set());
           this.cdr.markForCheck();
         },
         error: (error) => {
@@ -106,6 +111,10 @@ export class OrdersListComponent implements OnInit, OnDestroy {
     return order.id;
   }
 
+  isNewOrder(orderId: number): boolean {
+    return this.newOrderIds().has(orderId);
+  }
+
   setupRealTimeUpdates(): void {
     this.ordersService.subscribeToOrderUpdates()
       .pipe(takeUntil(this.destroy$))
@@ -133,18 +142,13 @@ export class OrdersListComponent implements OnInit, OnDestroy {
     
     switch (updateEvent.eventType) {
       case 'CREATED':
+        this.handleOrderCreated(updateEvent.orderId);
+        break;
       case 'UPDATED':
-        // For created/updated orders, reload the current page to get fresh data
-        this.loadOrders();
+        this.handleOrderUpdated(updateEvent.orderId);
         break;
       case 'DELETED':
-        // For deleted orders, remove from current list if present
-        this.orders = this.orders.filter(order => order.id !== updateEvent.orderId);
-        if (this.pageResponse) {
-          this.pageResponse.totalElements--;
-          this.pageResponse.content = this.orders;
-        }
-        this.cdr.markForCheck();
+        this.handleOrderDeleted(updateEvent.orderId);
         break;
       default:
         console.warn('Unknown event type:', updateEvent.eventType);
@@ -152,6 +156,99 @@ export class OrdersListComponent implements OnInit, OnDestroy {
         this.loadOrders();
         break;
     }
+  }
+
+  private handleOrderCreated(orderId: number): void {
+    // Check if we're on the first page and sorted by date desc to show new orders
+    if (this.pageRequest.page === 0 && 
+        this.pageRequest.sortBy === 'orderDate' && 
+        this.pageRequest.sortDirection === 'desc') {
+      
+      // Fetch the new order and add it to the list
+      this.ordersService.getOrderById(orderId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (newOrder) => {
+            // Check if order already exists to avoid duplicates
+            if (!this.orders.find(order => order.id === newOrder.id)) {
+              // Add to the beginning of the array
+              this.orders.unshift(newOrder);
+              
+              // Mark as new for animation
+              const currentNewIds = this.newOrderIds();
+              currentNewIds.add(newOrder.id);
+              this.newOrderIds.set(new Set(currentNewIds));
+              
+              // Remove the animation class after animation completes
+              setTimeout(() => {
+                const updatedIds = this.newOrderIds();
+                updatedIds.delete(newOrder.id);
+                this.newOrderIds.set(new Set(updatedIds));
+                this.cdr.markForCheck();
+              }, 1000); // Match the animation duration
+              
+              // Update pagination info
+              if (this.pageResponse) {
+                this.pageResponse.totalElements++;
+                // Remove the last item if we exceed page size
+                if (this.orders.length > this.pageRequest.size) {
+                  this.orders.pop();
+                }
+              }
+              
+              this.cdr.markForCheck();
+            }
+          },
+          error: (error) => {
+            console.error('Error fetching new order:', error);
+            // Fallback to reloading if individual fetch fails
+            this.loadOrders();
+          }
+        });
+    } else {
+      // If not on first page or different sorting, just update pagination count
+      if (this.pageResponse) {
+        this.pageResponse.totalElements++;
+      }
+      this.cdr.markForCheck();
+    }
+  }
+
+  private handleOrderUpdated(orderId: number): void {
+    // Find and update the existing order
+    const existingOrderIndex = this.orders.findIndex(order => order.id === orderId);
+    if (existingOrderIndex !== -1) {
+      // Fetch the updated order
+      this.ordersService.getOrderById(orderId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (updatedOrder) => {
+            this.orders[existingOrderIndex] = updatedOrder;
+            this.cdr.markForCheck();
+          },
+          error: (error) => {
+            console.error('Error fetching updated order:', error);
+            // Fallback to reloading if individual fetch fails
+            this.loadOrders();
+          }
+        });
+    } else {
+      // Order not in current page, just trigger change detection for any UI updates
+      this.cdr.markForCheck();
+    }
+  }
+
+  private handleOrderDeleted(orderId: number): void {
+    // Remove from current list if present
+    const initialLength = this.orders.length;
+    this.orders = this.orders.filter(order => order.id !== orderId);
+    
+    if (this.orders.length < initialLength && this.pageResponse) {
+      this.pageResponse.totalElements--;
+      this.pageResponse.content = this.orders;
+    }
+    
+    this.cdr.markForCheck();
   }
 
   toggleRealTimeUpdates(): void {

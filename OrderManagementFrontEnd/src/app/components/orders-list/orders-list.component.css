@@ -264,6 +264,43 @@
   color: #6b7280;
 }
 
+/* New order animation */
+.new-order-animation {
+  animation: slideInAndHighlight 1s ease-out forwards;
+}
+
+@keyframes slideInAndHighlight {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+    background-color: #dbeafe;
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0);
+    background-color: #dbeafe;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    background-color: transparent;
+  }
+}
+
+/* Ensure smooth transitions for table rows */
+.orders-table tbody tr {
+  transition: background-color 0.3s ease;
+}
+
+.orders-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Make sure new order rows don't interfere with hover states */
+.new-order-animation:hover {
+  background-color: #f3f4f6 !important;
+}
+
 @media (max-width: 1024px) {
   .table-container {
     margin: 0 -1rem;

@@ -35,7 +35,8 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let order of orders; trackBy: trackByOrderId">
+        <tr *ngFor="let order of orders; trackBy: trackByOrderId"
+            [class.new-order-animation]="isNewOrder(order.id)">
           <td class="order-id">#{{ order.id }}</td>
           <td class="order-date">{{ formatDate(order.orderDate) }}</td>
           <td class="customer">

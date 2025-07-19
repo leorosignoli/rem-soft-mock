@@ -1,10 +1,10 @@
 package br.com.remsoft.order.management.service.config;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.time.Duration;
 import org.slf4j.Logger;
@@ -31,13 +31,16 @@ public class CacheConfig {
 
   @Bean
   public RedisCacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-    LOGGER.info("Configuring Redis cache manager");
+    LOGGER.info("Configuring Redis cache manager with improved serialization");
+    
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-    objectMapper.activateDefaultTyping(
-        LaissezFaireSubTypeValidator.instance,
-        ObjectMapper.DefaultTyping.NON_FINAL,
-        JsonTypeInfo.As.PROPERTY);
+    
+    // Fix: Use simpler configuration without problematic type handling
+    objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
+    
     objectMapper.registerModule(new JavaTimeModule());
     objectMapper.findAndRegisterModules();
 
@@ -61,7 +64,7 @@ public class CacheConfig {
 
     RedisCacheManager cacheManager =
         RedisCacheManager.builder(connectionFactory).cacheDefaults(config).build();
-    LOGGER.info("Redis cache manager configured successfully");
+    LOGGER.info("Redis cache manager configured successfully with improved serialization");
     return cacheManager;
   }
 }

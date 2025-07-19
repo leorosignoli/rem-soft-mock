@@ -1,0 +1,7 @@
+<div class="notification-popup" 
+     [class.visible]="visible()" 
+     *ngIf="show()">
+  <div class="notification-content">
+    <div class="notification-message" [innerHTML]="message"></div>
+  </div>
+</div>

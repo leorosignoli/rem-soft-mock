@@ -1,4 +1,8 @@
 <div class="order-details-container">
+  <app-notification-popup 
+    [message]="notificationMessage">
+  </app-notification-popup>
+  
   <div class="header">
     <button (click)="goBack()" class="back-btn">← Voltar aos Pedidos</button>
     <h2 *ngIf="order">Pedido #{{ order.id }}</h2>

@@ -122,5 +122,4 @@ public class OrdersServiceImpl implements OrdersService {
     final var event = OrderUpdateEventDTO.created(orderData);
     orderUpdateService.broadcastOrderUpdate(event);
   }
-
 }

@@ -31,12 +31,13 @@
             Valor Total
             <span class="sort-icon">{{ getSortIcon('totalAmount') }}</span>
           </th>
-          <th>Ações</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let order of orders; trackBy: trackByOrderId"
-            [class.new-order-animation]="isNewOrder(order.id)">
+            [class.new-order-animation]="isNewOrder(order.id)"
+            class="clickable-row"
+            (click)="navigateToOrder(order.id)">
           <td class="order-id">#{{ order.id }}</td>
           <td class="order-date">{{ formatDate(order.orderDate) }}</td>
           <td class="customer">
@@ -47,9 +48,6 @@
           </td>
           <td class="items-count">{{ getTotalItems(order) }}</td>
           <td class="total-amount">{{ formatCurrency(order.totalAmount) }}</td>
-          <td class="actions">
-            <a [routerLink]="['/orders', order.id]" class="view-btn">Ver</a>
-          </td>
         </tr>
       </tbody>
     </table>

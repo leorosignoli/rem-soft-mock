@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef, NgZone, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { OrdersService } from '../../services/orders.service';
 import { Order, PageRequest, PageResponse } from '../../models/order.model';
@@ -8,7 +8,7 @@ import { Order, PageRequest, PageResponse } from '../../models/order.model';
 @Component({
   selector: 'app-orders-list',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './orders-list.component.html',
   styleUrls: ['./orders-list.component.css']
 })
@@ -34,7 +34,8 @@ export class OrdersListComponent implements OnInit, OnDestroy {
   constructor(
     private ordersService: OrdersService,
     private cdr: ChangeDetectorRef,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -113,6 +114,10 @@ export class OrdersListComponent implements OnInit, OnDestroy {
 
   isNewOrder(orderId: number): boolean {
     return this.newOrderIds().has(orderId);
+  }
+
+  navigateToOrder(orderId: number): void {
+    this.router.navigate(['/orders', orderId]);
   }
 
   setupRealTimeUpdates(): void {

@@ -1,15 +1,16 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { OrdersService } from '../../services/orders.service';
+import { NotificationService } from '../../services/notification.service';
 import { Order } from '../../models/order.model';
-import { NotificationPopupComponent } from '../notification-popup/notification-popup.component';
+import { NotificationContainerComponent } from '../notification-container/notification-container.component';
 
 @Component({
   selector: 'app-order-details',
   standalone: true,
-  imports: [CommonModule, NotificationPopupComponent],
+  imports: [CommonModule, NotificationContainerComponent],
   templateUrl: './order-details.component.html',
   styleUrls: ['./order-details.component.css']
 })
@@ -17,9 +18,6 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
   order: Order | null = null;
   loading = false;
   error = '';
-  notificationMessage = '';
-  
-  @ViewChild(NotificationPopupComponent) notificationComponent!: NotificationPopupComponent;
   
   private destroy$ = new Subject<void>();
 
@@ -27,6 +25,7 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private ordersService: OrdersService,
+    private notificationService: NotificationService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -106,13 +105,8 @@ export class OrderDetailsComponent implements OnInit, OnDestroy {
   }
 
   private showNewOrderNotification(orderId: number): void {
-    this.notificationMessage = `Novo pedido <a href="/orders/${orderId}">#${orderId}</a> foi criado!`;
-    this.cdr.detectChanges();
-    
-    setTimeout(() => {
-      if (this.notificationComponent) {
-        this.notificationComponent.triggerNotification();
-      }
-    }, 0);
+    const message = `Novo pedido <a href="/orders/${orderId}">#${orderId}</a> foi criado!`;
+    console.log('OrderDetailsComponent: Showing notification for order', orderId);
+    this.notificationService.show(message, 'success');
   }
 }

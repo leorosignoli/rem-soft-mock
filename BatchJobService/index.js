@@ -2,7 +2,8 @@ const axios = require('axios');
 
 // Configuration
 const BACKEND_URL = process.env.BACKEND_URL || 'http://backend:8080';
-const INTERVAL_MS = 10000; // 10 seconds
+const MIN_INTERVAL_MS = 3000; // 3 seconds
+const MAX_INTERVAL_MS = 12000; // 12 seconds
 
 // Sample data directly from init.sql
 const USERS = [
@@ -57,6 +58,11 @@ class OrderBatchJob {
   constructor() {
     this.isRunning = false;
     this.orderCount = 0;
+    this.timeoutId = null;
+  }
+
+  getRandomInterval() {
+    return Math.random() * (MAX_INTERVAL_MS - MIN_INTERVAL_MS) + MIN_INTERVAL_MS;
   }
 
   // Generate a random order request
@@ -129,6 +135,12 @@ class OrderBatchJob {
       
       this.orderCount++;
       console.log(`[${new Date().toISOString()}] ✅ Order created successfully! Order ID: ${response.data.id}, Total: $${response.data.totalAmount}`);
+      
+      if (this.isRunning) {
+        const nextInterval = this.getRandomInterval();
+        console.log(`⏰ Next order in ${Math.round(nextInterval / 1000)} seconds`);
+        this.scheduleNextOrder(nextInterval);
+      }
       console.log('---');
       
     } catch (error) {
@@ -138,8 +150,20 @@ class OrderBatchJob {
         console.error('Response status:', error.response.status);
         console.error('Response data:', error.response.data);
       }
+      
+      if (this.isRunning) {
+        const nextInterval = this.getRandomInterval();
+        console.log(`⏰ Next order attempt in ${Math.round(nextInterval / 1000)} seconds`);
+        this.scheduleNextOrder(nextInterval);
+      }
       console.log('---');
     }
+  }
+
+  scheduleNextOrder(intervalMs) {
+    this.timeoutId = setTimeout(() => {
+      this.createOrder();
+    }, intervalMs);
   }
 
   // Start the batch job
@@ -152,15 +176,10 @@ class OrderBatchJob {
     this.isRunning = true;
     console.log(`[${new Date().toISOString()}] Starting order batch job...`);
     console.log(`Backend URL: ${BACKEND_URL}`);
-    console.log(`Interval: ${INTERVAL_MS}ms (${INTERVAL_MS / 1000} seconds)`);
+    console.log(`Random interval: ${MIN_INTERVAL_MS / 1000}-${MAX_INTERVAL_MS / 1000} seconds`);
     
     // Create first order immediately
     this.createOrder();
-    
-    // Then create orders every 10 seconds
-    this.intervalId = setInterval(() => {
-      this.createOrder();
-    }, INTERVAL_MS);
   }
 
   // Stop the batch job
@@ -171,7 +190,10 @@ class OrderBatchJob {
     }
     
     this.isRunning = false;
-    clearInterval(this.intervalId);
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
     console.log(`[${new Date().toISOString()}] Batch job stopped. Total orders created: ${this.orderCount}`);
   }
 }

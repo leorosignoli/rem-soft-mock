@@ -1,7 +1,12 @@
 <div class="notification-popup" 
-     [class.visible]="visible()" 
-     *ngIf="show()">
+     *ngIf="notification"
+     [class.visible]="visible()"
+     [ngClass]="getNotificationClass()"
+     [style.top]="getTopPosition()">
   <div class="notification-content">
-    <div class="notification-message" [innerHTML]="message"></div>
+    <div class="notification-message" [innerHTML]="notification.message"></div>
+    <button class="notification-dismiss" (click)="onDismiss()" aria-label="Dismiss notification">
+      ×
+    </button>
   </div>
 </div>

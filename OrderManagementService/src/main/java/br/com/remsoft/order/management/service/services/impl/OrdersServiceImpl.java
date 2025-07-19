@@ -118,23 +118,9 @@ public class OrdersServiceImpl implements OrdersService {
     return response;
   }
 
-  @CacheEvict(
-      value = {"orders", "orders-page"},
-      allEntries = true)
-  public void evictOrdersCache() {}
-
   public void broadcastOrderCreated(final GetOrderResponseDTO orderData) {
     final var event = OrderUpdateEventDTO.created(orderData);
     orderUpdateService.broadcastOrderUpdate(event);
   }
 
-  public void broadcastOrderUpdated(final GetOrderResponseDTO orderData) {
-    final var event = OrderUpdateEventDTO.updated(orderData);
-    orderUpdateService.broadcastOrderUpdate(event);
-  }
-
-  public void broadcastOrderDeleted(final Long orderId) {
-    final var event = OrderUpdateEventDTO.deleted(orderId);
-    orderUpdateService.broadcastOrderUpdate(event);
-  }
 }

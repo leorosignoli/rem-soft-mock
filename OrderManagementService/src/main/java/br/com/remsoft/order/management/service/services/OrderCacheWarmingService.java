@@ -46,7 +46,6 @@ public class OrderCacheWarmingService {
     logger.info("Starting cache warming process...");
 
     warmRecentOrders();
-    warmPopularOrders();
     warmPaginatedResults();
 
     logger.info("Cache warming process completed");
@@ -71,53 +70,6 @@ public class OrderCacheWarmingService {
             });
 
     logger.info("Cached {} recent orders", recentOrders.getContent().size());
-  }
-
-  public void warmPopularOrders() {
-    logger.info("Warming popular orders cache...");
-
-    warmHighValueOrders();
-    warmMultiItemOrders();
-
-    logger.info("Popular orders cache warming completed");
-  }
-
-  private void warmHighValueOrders() {
-    Pageable pageable =
-        PageRequest.of(
-            0, cacheWarmingProperties.getPageSize(), Sort.by(Sort.Direction.DESC, "totalAmount"));
-
-    Page<Order> highValueOrders =
-        ordersRepository.findHighValueOrdersWithOrderItems(
-            cacheWarmingProperties.getMinAmount(), pageable);
-
-    highValueOrders
-        .getContent()
-        .forEach(
-            order -> {
-              var orderDto = orderMapper.toGetOrderResponseDTO(order);
-              cacheManager.getCache("orders").put(order.getId(), orderDto);
-            });
-
-    logger.info("Cached {} high-value orders", highValueOrders.getContent().size());
-  }
-
-  private void warmMultiItemOrders() {
-    Pageable pageable =
-        PageRequest.of(
-            0, cacheWarmingProperties.getPageSize(), Sort.by(Sort.Direction.DESC, "orderDate"));
-
-    Page<Order> multiItemOrders = ordersRepository.findMultiItemOrdersWithOrderItems(pageable);
-
-    multiItemOrders
-        .getContent()
-        .forEach(
-            order -> {
-              var orderDto = orderMapper.toGetOrderResponseDTO(order);
-              cacheManager.getCache("orders").put(order.getId(), orderDto);
-            });
-
-    logger.info("Cached {} multi-item orders", multiItemOrders.getContent().size());
   }
 
   public void warmPaginatedResults() {

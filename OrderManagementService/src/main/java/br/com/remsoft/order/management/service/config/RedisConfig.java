@@ -1,17 +1,12 @@
 package br.com.remsoft.order.management.service.config;
 
+import static br.com.remsoft.order.management.service.config.CacheConfig.getGenericJackson2JsonRedisSerializer;
+
 import br.com.remsoft.order.management.service.listeners.OrderCacheEvictionListener;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.PatternTopic;
@@ -33,23 +28,7 @@ public class RedisConfig {
     final RedisTemplate<String, Object> template = new RedisTemplate<>();
     template.setConnectionFactory(connectionFactory);
 
-    // Create custom ObjectMapper with improved configuration
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-    
-    // Use simpler configuration without problematic type handling
-    objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-    objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-    objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
-    
-    objectMapper.registerModule(new JavaTimeModule());
-    objectMapper.findAndRegisterModules();
-
-    // Register PageImplMixin to handle PageImpl serialization/deserialization
-    objectMapper.addMixIn(PageImpl.class, PageImplMixin.class);
-
-    GenericJackson2JsonRedisSerializer serializer =
-        new GenericJackson2JsonRedisSerializer(objectMapper);
+    GenericJackson2JsonRedisSerializer serializer = getGenericJackson2JsonRedisSerializer();
 
     template.setKeySerializer(new StringRedisSerializer());
     template.setValueSerializer(serializer);

@@ -38,19 +38,17 @@ public class ProductsServiceImpl implements ProductsService {
   @Override
   public AddProductResponseDTO addProduct(final AddProductRequestDTO addProductRequestDTO) {
 
-    final var manufacturer =
-        manufacturersRepository
-            .findById(addProductRequestDTO.getManufacturerId())
-            .orElseThrow(
-                () ->
-                    NotFoundException.manufacturerNotFound(
-                        addProductRequestDTO.getManufacturerId()));
+    return manufacturersRepository
+        .findById(addProductRequestDTO.getManufacturerId())
+        .map(
+            manufacturer -> {
+              final var product = productMapper.toProduct(addProductRequestDTO);
+              product.setManufacturer(manufacturer);
 
-    final var product = productMapper.toProduct(addProductRequestDTO);
-    product.setManufacturer(manufacturer);
-
-    final var savedProduct = productsRepository.save(product);
-
-    return productMapper.toAddProductResponseDTO(savedProduct);
+              return productsRepository.save(product);
+            })
+        .map(productMapper::toAddProductResponseDTO)
+        .orElseThrow(
+            () -> NotFoundException.manufacturerNotFound(addProductRequestDTO.getManufacturerId()));
   }
 }
